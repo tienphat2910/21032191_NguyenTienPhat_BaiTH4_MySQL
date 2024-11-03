@@ -10,7 +10,7 @@ const Screen01 = ({ route, navigation }) => { // Nhận navigation từ props
         { image: require('../assets/data/homeicon.png'), name: 'Home' },
         { image: require('../assets/data/exploreicon.png'), name: 'Explore' },
         { image: require('../assets/data/searchicon.png'), name: 'Search' },
-        { image: null, name: 'Profile', navigate: true }, // Thêm thuộc tính navigate
+        { image: require('../assets/data/profileicon.png'), name: 'Profile', navigate: true }, // Thêm thuộc tính navigate
     ];
 
     useEffect(() => {
@@ -108,18 +108,13 @@ const Screen01 = ({ route, navigation }) => { // Nhận navigation từ props
                     <TouchableOpacity
                         key={index}
                         style={styles.footerItem}
-                        onPress={item.navigate ? handleProfilePress : null}
+                        onPress={item.navigate ? handleProfilePress : null} // Gọi hàm handleProfilePress nếu là Profile
                     >
-                        {item.name === 'Profile' ? (
-                            <Image source={{ uri: avatar }} style={styles.footerAvatarIcon} resizeMode="cover" />
-                        ) : (
-                            <Image source={item.image} style={styles.footerIcon} resizeMode="cover" />
-                        )}
+                        <Image source={item.image} style={styles.footerIcon} resizeMode="cover" />
                         <Text style={styles.footerText}>{item.name}</Text>
                     </TouchableOpacity>
                 ))}
             </View>
-
         </SafeAreaView>
     );
 }
@@ -250,11 +245,5 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
         marginTop: 3,
-    },
-    footerAvatarIcon: {
-        width: 30,
-        height: 30,
-        borderRadius: 15, // Circular profile icon
-    },
-
+    }
 });

@@ -1,6 +1,6 @@
 const express = require('express');
 const mysql = require('mysql2');
-const bcrypt = require('bcrypt'); // Import bcrypt để mã hóa mật khẩu
+const bcrypt = require('bcrypt'); // Import bcrypt
 const cors = require('cors');
 
 const app = express();
@@ -28,7 +28,7 @@ db.connect(err => {
   }
 });
 
-// API đăng ký tài khoản với mã hóa mật khẩu
+// Tạo tài khoản với mã hóa mật khẩu
 app.post('/api/register', async (req, res) => {
   const { email, password, name, avatar } = req.body;
 
@@ -59,7 +59,7 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-// API đăng nhập với xác thực mật khẩu mã hóa
+// Đăng nhập với xác thực mật khẩu
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -89,29 +89,8 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// API quên mật khẩu
-app.post('/api/forgot-password', (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Vui lòng nhập email' });
-  }
-
-  db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-    if (err) {
-      return res.status(500).json({ success: false, message: 'Lỗi khi kiểm tra email' });
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({ success: false, message: 'Email không tồn tại' });
-    }
-
-    // Nếu email tồn tại
-    return res.status(200).json({ success: true });
-  });
-});
-
-// API đặt lại mật khẩu với mã hóa mật khẩu mới
+// Các API khác giữ nguyên như ban đầu...
+// Đặt lại mật khẩu (reset-password) sẽ mã hóa mật khẩu mới:
 app.post('/api/reset-password', async (req, res) => {
   const { email, newPassword } = req.body;
 
@@ -135,18 +114,6 @@ app.post('/api/reset-password', async (req, res) => {
   });
 });
 
-// API lấy dữ liệu tất cả người dùng từ MySQL
-app.get('/api/users', (req, res) => {
-  db.query('SELECT * FROM users', (err, results) => {
-    if (err) {
-      res.status(500).send('Lỗi khi lấy dữ liệu từ database');
-    } else {
-      res.json(results);
-    }
-  });
-});
-
-// Khởi động server
 app.listen(PORT, () => {
   console.log(`Server chạy trên http://localhost:${PORT}`);
 });

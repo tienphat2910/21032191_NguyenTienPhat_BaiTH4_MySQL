@@ -1,6 +1,5 @@
 const express = require('express');
 const mysql = require('mysql2');
-const bcrypt = require('bcrypt'); // Import bcrypt để mã hóa mật khẩu
 const cors = require('cors');
 
 const app = express();
@@ -28,16 +27,14 @@ db.connect(err => {
   }
 });
 
-// API đăng ký tài khoản với mã hóa mật khẩu
-app.post('/api/register', async (req, res) => {
-  const { email, password, name, avatar } = req.body;
-
-  if (!email || !password || !name || !avatar) {
+// Tạo tài khoản
+app.post('/api/register', (req, res) => {
+  const { email, password, name, avatar } = req.body; // Thêm name và avatar vào đây
+  if (!email || !password || !name || !avatar) { // Kiểm tra tất cả các trường
     return res.status(400).json({ success: false, message: 'Vui lòng nhập email, mật khẩu, tên và hình đại diện' });
   }
 
-  // Kiểm tra nếu email đã tồn tại
-  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+  db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
     if (err) {
       return res.status(500).json({ success: false, message: 'Lỗi khi kiểm tra email' });
     }
@@ -46,11 +43,7 @@ app.post('/api/register', async (req, res) => {
       return res.status(409).json({ success: false, message: 'Email đã tồn tại' });
     }
 
-    // Mã hóa mật khẩu
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Lưu tài khoản mới vào cơ sở dữ liệu
-    db.query('INSERT INTO users (email, password, name, avatar) VALUES (?, ?, ?, ?)', [email, hashedPassword, name, avatar], (err) => {
+    db.query('INSERT INTO users (email, password, name, avatar) VALUES (?, ?, ?, ?)', [email, password, name, avatar], (err) => {
       if (err) {
         return res.status(500).json({ success: false, message: 'Lỗi khi tạo tài khoản' });
       }
@@ -59,37 +52,30 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-// API đăng nhập với xác thực mật khẩu mã hóa
+// Đăng nhập
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
+  var sql = "SELECT * FROM users WHERE email = ? AND password = ?";
 
-  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+  db.query(sql, [email, password], function (err, results) {
     if (err) {
       return res.status(500).json({ message: 'Internal server error' });
     }
-
     if (results.length > 0) {
-      const user = results[0];
-
-      // Kiểm tra mật khẩu đã mã hóa
-      const isMatch = await bcrypt.compare(password, user.password);
-
-      if (isMatch) {
-        return res.json({
-          email: user.email,
-          avatar: user.avatar,
-          name: user.name,
-        });
-      } else {
-        return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
-      }
+      // Giả định rằng thông tin người dùng bao gồm link ảnh
+      return res.json({
+        email: results[0].email, // Trả về email
+        password: results[0].password,
+        avatar: results[0].avatar, // Trả về link ảnh
+        name: results[0].name // Trả về tên người dùng
+      });
     } else {
-      return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
   });
 });
 
-// API quên mật khẩu
+
 app.post('/api/forgot-password', (req, res) => {
   const { email } = req.body;
 
@@ -111,18 +97,15 @@ app.post('/api/forgot-password', (req, res) => {
   });
 });
 
-// API đặt lại mật khẩu với mã hóa mật khẩu mới
-app.post('/api/reset-password', async (req, res) => {
+// Đặt lại mật khẩu (không thay đổi)
+app.post('/api/reset-password', (req, res) => {
   const { email, newPassword } = req.body;
 
   if (!email || !newPassword) {
     return res.status(400).json({ success: false, message: 'Vui lòng nhập email và mật khẩu mới' });
   }
 
-  // Mã hóa mật khẩu mới
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-  db.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email], (err, results) => {
+  db.query('UPDATE users SET password = ? WHERE email = ?', [newPassword, email], (err, results) => {
     if (err) {
       return res.status(500).json({ success: false, message: 'Lỗi khi cập nhật mật khẩu' });
     }
@@ -135,7 +118,9 @@ app.post('/api/reset-password', async (req, res) => {
   });
 });
 
-// API lấy dữ liệu tất cả người dùng từ MySQL
+
+
+// API lấy dữ liệu từ MySQL
 app.get('/api/users', (req, res) => {
   db.query('SELECT * FROM users', (err, results) => {
     if (err) {
@@ -146,7 +131,6 @@ app.get('/api/users', (req, res) => {
   });
 });
 
-// Khởi động server
 app.listen(PORT, () => {
   console.log(`Server chạy trên http://localhost:${PORT}`);
 });

@@ -134,6 +134,42 @@ app.post('/api/reset-password', async (req, res) => {
     }
   });
 });
+// API cập nhật email
+app.put('/api/update-email', (req, res) => {
+  const { currentEmail, newEmail } = req.body;
+
+  // Kiểm tra đầu vào
+  if (!currentEmail || !newEmail) {
+    return res.status(400).json({ success: false, message: 'Vui lòng nhập email hiện tại và email mới' });
+  }
+
+  // Kiểm tra nếu email mới đã tồn tại
+  db.query('SELECT * FROM users WHERE email = ?', [newEmail], (err, results) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Lỗi khi kiểm tra email' });
+    }
+
+    if (results.length > 0) {
+      // Email mới đã tồn tại
+      return res.status(409).json({ success: false, message: 'Email mới đã tồn tại' });
+    }
+
+    // Nếu email mới chưa tồn tại, tiến hành cập nhật
+    db.query('UPDATE users SET email = ? WHERE email = ?', [newEmail, currentEmail], (err, results) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Lỗi khi cập nhật email' });
+      }
+
+      if (results.affectedRows > 0) {
+        // Email đã được cập nhật thành công
+        return res.status(200).json({ success: true, message: 'Email đã được cập nhật thành công' });
+      } else {
+        // Không tìm thấy email hiện tại
+        return res.status(404).json({ success: false, message: 'Email hiện tại không tồn tại' });
+      }
+    });
+  });
+});
 
 // API lấy dữ liệu tất cả người dùng từ MySQL
 app.get('/api/users', (req, res) => {

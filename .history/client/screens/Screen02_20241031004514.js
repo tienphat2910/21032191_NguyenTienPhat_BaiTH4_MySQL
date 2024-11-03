@@ -2,24 +2,27 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Image, Button, Modal, Pressable, TouchableOpacity, SafeAreaView } from 'react-native';
 
 const Screen02 = ({ route, navigation }) => {
-    const { name, avatar, email, password } = route.params || {}; // Nhận dữ liệu từ params với giá trị mặc định
+    const { name, avatar, email, password } = route.params; // Nhận dữ liệu từ params
+    const [modalVisible, setModalVisible] = useState(false); // Trạng thái modal
 
-    const [modalVisible, setModalVisible] = useState(false);
+    // In ra thông tin để kiểm tra
+    console.log("Email:", email); // Kiểm tra email
+    console.log("Password:", password); // Kiểm tra password
 
     const handleSignOut = () => {
         setModalVisible(false);
-        navigation.navigate('SignInScreen');
+        navigation.navigate('SignInScreen'); // Quay lại Screen01
     };
 
     const handleHomePress = () => {
-        navigation.navigate('Screen01');
+        navigation.navigate('Screen01'); // Điều hướng về Screen01
     };
 
     const footer = [
         { image: require('../assets/data/homeicon.png'), name: 'Home' },
         { image: require('../assets/data/exploreicon.png'), name: 'Explore' },
         { image: require('../assets/data/searchicon.png'), name: 'Search' },
-        { image: null, name: 'Profile', navigate: false },
+        { image: require('../assets/data/profileicon.png'), name: 'Profile', navigate: false },
     ];
 
     return (
@@ -28,15 +31,14 @@ const Screen02 = ({ route, navigation }) => {
                 <Image source={{ uri: avatar }} style={styles.avatar} />
                 <Text style={styles.name}>{name}</Text>
 
+                {/* Khung cho Email */}
                 <View style={styles.inputContainer}>
                     <Text style={styles.info}>Email: {email}</Text>
                 </View>
 
-                {/* Kiểm tra nếu có password */}
+                {/* Khung cho Password */}
                 <View style={styles.inputContainer}>
-                    <Text style={styles.info}>
-                        Password: {password ? password.replace(/./g, '•') : 'N/A'}
-                    </Text>
+                    <Text style={styles.info}>Password: {password.replace(/./g, '•')}</Text>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -72,12 +74,9 @@ const Screen02 = ({ route, navigation }) => {
                     <TouchableOpacity
                         key={index}
                         style={styles.footerItem}
-                        onPress={item.navigate ? handleProfilePress : null}>
-                        {item.name === 'Profile' ? (
-                            <Image source={{ uri: avatar }} style={styles.footerAvatarIcon} resizeMode="cover" />
-                        ) : (
-                            <Image source={item.image} style={styles.footerIcon} resizeMode="cover" />
-                        )}
+                        onPress={item.navigate ? handleHomePress : null} // Chuyển hướng nếu là Home
+                    >
+                        <Image source={item.image} style={styles.footerIcon} resizeMode="cover" />
                         <Text style={styles.footerText}>{item.name}</Text>
                     </TouchableOpacity>
                 ))}
@@ -85,7 +84,6 @@ const Screen02 = ({ route, navigation }) => {
         </SafeAreaView>
     );
 }
-
 
 export default Screen02;
 
@@ -188,11 +186,5 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
         marginTop: 3,
-    },
-    footerAvatarIcon: {
-        width: 30,
-        height: 30,
-        borderRadius: 15, // Circular profile icon
-    },
-
+    }
 });
